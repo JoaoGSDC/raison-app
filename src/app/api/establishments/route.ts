@@ -15,27 +15,26 @@ export async function GET(_: any) {
         createdAt: -1,
       })
       .toArray();
-    return NextResponse.json(establishments);
+
+    const formattedEstablishments = establishments.map((establishment) => ({
+      id: establishment._id.toString(),
+      coordinate: {
+        latitude: Number(establishment.lat),
+        longitude: Number(establishment.lng),
+      },
+    }));
+
+    return NextResponse.json(formattedEstablishments);
   } catch (error) {
     return NextResponse.json(error);
   }
 }
 
-const REQUIRED_FIELDS = ['name', 'category', 'street', 'number', 'neighborhood', 'city', 'state'];
 export async function POST(request: Request) {
   try {
     const db: Db = await connectToDatabase();
 
     const { name, category, street, number, neighborhood, city, state } = await request.json();
-
-    const checkedFields = validateRequiredFields(
-      { name, category, street, number, neighborhood, city, state },
-      REQUIRED_FIELDS
-    );
-
-    if (checkedFields.hasError) {
-      return NextResponse.json({ error: checkedFields.requireds }, { status: 400 });
-    }
 
     const establishments = await db.collection('establishments').insertOne({
       name,

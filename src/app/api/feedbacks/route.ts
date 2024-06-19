@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { Db } from 'mongodb';
 import connectToDatabase from '../utils/dbConnect';
+import admin from '../utils/firebaseAdmin';
 
 connectToDatabase();
 
@@ -21,30 +22,43 @@ export async function GET(_: any) {
   }
 }
 
-const REQUIRED_FIELDS = [
-  'userVisitDate',
-  'consumed',
-  'averageCost',
-  'evaluations',
-  'pros',
-  'cons',
-  'establishment',
-  'user',
-];
 export async function POST(request: Request) {
   try {
     const db: Db = await connectToDatabase();
 
-    const { picture, userVisitDate, consumed, averageCost, evaluations, pros, cons, observation, establishment, user } =
-      await request.json();
+    const authHeader = request.headers.get('Authorization');
+    if (!authHeader) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
 
-    const checkedFields = validateRequiredFields(
-      { userVisitDate, consumed, averageCost, evaluations, pros, cons, establishment, user },
-      REQUIRED_FIELDS
-    );
+    const token = authHeader.split(' ')[1];
+    const decodedToken = await admin.auth().verifyIdToken(token);
+    const email = decodedToken.email;
 
-    if (checkedFields.hasError) {
-      return NextResponse.json({ error: checkedFields.requireds }, { status: 400 });
+    const {
+      picture,
+      userVisitDate,
+      category,
+      consumed,
+      averageCost,
+      evaluations,
+      pros,
+      cons,
+      observation,
+      establishment,
+    } = await request.json();
+
+    let respEstablishment: any = {};
+    if (establishment._id === '0') {
+      const ec = {
+        ...establishment,
+        categories: [...establishment.category, category],
+        createdAt: new Date(),
+      };
+
+      delete ec.category;
+
+      respEstablishment = await db.collection('establishments').insertOne(ec);
     }
 
     const feedbacks = await db.collection('feedbacks').insertOne({
@@ -56,8 +70,9 @@ export async function POST(request: Request) {
       pros,
       cons,
       observation,
-      establishment,
-      user,
+      establishment: respEstablishment.insertedId,
+      user: email,
+      likes: [],
       createdAt: new Date(),
     });
 
@@ -73,7 +88,7 @@ export async function POST(request: Request) {
         cons,
         observation,
         establishment,
-        user,
+        user: email,
       },
       { status: 200 }
     );

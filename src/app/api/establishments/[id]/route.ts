@@ -11,8 +11,10 @@ export async function GET(_: any, { params }: { params: { id: string } }) {
     const { id } = params;
 
     const establishment = await db.collection('establishments').findOne({ _id: new ObjectId(id) });
+    const feedbacks = await db.collection('feedbacks').find({ 'establishment._id': id }).toArray();
+    const feedbackCount = feedbacks.length;
 
-    return NextResponse.json(establishment);
+    return NextResponse.json({ ...establishment, feedbackCount, feedbacks });
   } catch (error) {
     return NextResponse.json(error);
   }
