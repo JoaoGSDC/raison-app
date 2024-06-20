@@ -38,7 +38,7 @@ connectToDatabase();
 export async function GET(request: Request, { params }: any) {
   try {
     const url = new URL(request.url);
-    const queryParams = url.searchParams;
+    const queryParams = new URLSearchParams(url.searchParams);
 
     const lat = parseFloat(queryParams.get('lat') || '0');
     const lng = parseFloat(queryParams.get('lng') || '0');
