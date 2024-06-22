@@ -37,12 +37,8 @@ connectToDatabase();
 
 export async function GET(request: Request, { params }: any) {
   try {
-    const url = new URL(request.url);
-    const queryParams = new URLSearchParams(url.searchParams);
-
-    const lat = parseFloat(queryParams.get('lat') || '0');
-    const lng = parseFloat(queryParams.get('lng') || '0');
-    const radius = parseFloat(queryParams.get('radius') || '0');
+    const { localization } = params;
+    const [lat, lng, radius] = localization.split(';');
 
     const db: Db = await connectToDatabase();
 
@@ -53,14 +49,14 @@ export async function GET(request: Request, { params }: any) {
     const filteredEstablishments = establishments
       .map((establishment) => {
         const distance = getDistanceFromLatLonInKm(
-          lat,
-          lng,
+          parseFloat(lat),
+          parseFloat(lng),
           parseFloat(establishment.lat),
           parseFloat(establishment.lng)
         );
         return { ...establishment, distance };
       })
-      .filter((establishment) => establishment.distance <= radius)
+      .filter((establishment) => establishment.distance <= Number(radius))
       .sort((a, b) => a.distance - b.distance);
 
     return NextResponse.json(filteredEstablishments);
