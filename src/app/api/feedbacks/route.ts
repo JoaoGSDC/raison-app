@@ -58,9 +58,12 @@ export async function POST(request: Request) {
       };
 
       delete ec.category;
+      delete ec._id;
 
       respEstablishment = await db.collection('establishments').insertOne(ec);
     }
+
+    const establishmentId = respEstablishment.insertedId.toHexString();
 
     const feedbacks = await db.collection('feedbacks').insertOne({
       picture,
@@ -71,7 +74,7 @@ export async function POST(request: Request) {
       pros,
       cons,
       observation,
-      establishment: respEstablishment.insertedId,
+      establishment: { _id: establishmentId },
       user: email,
       likes: [],
       createdAt: new Date(),

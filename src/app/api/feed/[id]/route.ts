@@ -93,3 +93,37 @@ export async function PATCH(request: Request, { params }: { params: { id: string
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
+
+export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+  try {
+    const db: Db = await connectToDatabase();
+
+    const authHeader = request.headers.get('Authorization');
+    if (!authHeader) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const token = authHeader.split(' ')[1];
+    const decodedToken = await admin.auth().verifyIdToken(token);
+    const email = decodedToken.email;
+
+    const { id } = params;
+    const feedbackId = new ObjectId(id);
+
+    const feedback = await db.collection('feedbacks').findOne({ _id: feedbackId });
+    if (!feedback) {
+      return NextResponse.json({ error: 'Feedback not found' }, { status: 404 });
+    }
+
+    if (feedback.user !== email) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
+    await db.collection('feedbacks').deleteOne({ _id: feedbackId });
+
+    return NextResponse.json({ message: 'Feedback deleted successfully' }, { status: 200 });
+  } catch (error) {
+    console.error('Error deleting feedback:', error);
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+  }
+}
