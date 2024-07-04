@@ -49,10 +49,17 @@ export async function POST(request: Request) {
     } = await request.json();
 
     let respEstablishment: any = {};
+    console.log('EC: ', {
+      category: establishment.category,
+    });
+
+    // console.log('ID: ', establishment._id);
+
     if (establishment._id === '0') {
       const ec = {
         ...establishment,
-        categories: [...establishment.category, category],
+        categories: establishment.category ? [...establishment.category, category] : [category],
+        email: '',
         createdAt: new Date(),
       };
 
@@ -60,6 +67,21 @@ export async function POST(request: Request) {
 
       respEstablishment = await db.collection('establishments').insertOne(ec);
     }
+
+    console.log({
+      picture,
+      userVisitDate,
+      consumed,
+      averageCost,
+      evaluations,
+      pros,
+      cons,
+      observation,
+      establishment: respEstablishment.insertedId,
+      user: email,
+      likes: [],
+      createdAt: new Date(),
+    });
 
     const feedbacks = await db.collection('feedbacks').insertOne({
       picture,
