@@ -14,6 +14,7 @@ import ToggleColorMode from './ToggleColorMode';
 import AssignmentTurnedInIcon from '@mui/icons-material/AssignmentTurnedIn';
 
 import Sitemark from './SitemarkIcon';
+import Link from 'next/link';
 
 interface AppAppBarProps {
   mode: PaletteMode;
@@ -85,15 +86,19 @@ export default function AppAppBar({ mode, toggleColorMode }: AppAppBarProps) {
             </Typography>
 
             <Box sx={{ display: { xs: 'none', md: 'flex' } }}>
-              <Button variant="text" color="info" size="small" onClick={() => null}>
-                Dashboard
-              </Button>
+              <Link href="/dashboard">
+                <Button variant="text" color="info" size="small" onClick={() => null}>
+                  Dashboard
+                </Button>
+              </Link>
             </Box>
 
             <Box sx={{ display: { xs: 'none', md: 'flex' } }}>
-              <Button variant="text" color="info" size="small" onClick={() => null}>
-                Estabelecimento
-              </Button>
+              <Link href="/estabelecimento">
+                <Button variant="text" color="info" size="small" onClick={() => null}>
+                  Estabelecimento
+                </Button>
+              </Link>
             </Box>
 
             <Box sx={{ display: { xs: 'none', md: 'flex' } }}>
@@ -103,9 +108,11 @@ export default function AppAppBar({ mode, toggleColorMode }: AppAppBarProps) {
             </Box>
 
             <Box sx={{ display: { xs: 'none', md: 'flex' } }}>
-              <Button variant="text" color="info" size="small" onClick={() => null}>
-                Anúncios
-              </Button>
+              <Link href="/anuncios">
+                <Button variant="text" color="info" size="small">
+                  Anúncios
+                </Button>
+              </Link>
             </Box>
           </Box>
           <Box
